@@ -1,0 +1,22 @@
+name: Database setup (manual)
+
+# Rebuilds the heist schema + seed data and (re)applies roles and grants on
+# Supabase. Audit log and submissions are preserved. Run from the Actions tab.
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      QUIZ_APP_PASSWORD: ${{ secrets.QUIZ_APP_PASSWORD }}
+      QUIZ_TAKER_PASSWORD: ${{ secrets.QUIZ_TAKER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:setup

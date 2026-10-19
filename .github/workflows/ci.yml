@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lint, typecheck, unit tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Unit tests (answer key + audit log verified in in-process Postgres)
+        run: npm test
+      - name: Next.js production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  live-db:
+    name: Live Supabase checks (uses GitHub Secrets)
+    runs-on: ubuntu-latest
+    needs: build
+    # Connection strings (with passwords) come only from repository secrets.
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      APP_DATABASE_URL: ${{ secrets.APP_DATABASE_URL }}
+      TAKER_DATABASE_URL: ${{ secrets.TAKER_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify secrets are configured
+        run: |
+          for v in DATABASE_URL APP_DATABASE_URL TAKER_DATABASE_URL; do
+            if [ -z "${!v}" ]; then echo "::error::Secret $v is not set"; exit 1; fi
+            echo "$v is set (value masked by GitHub)"
+          done
+      - name: Live tests (hints vs. live data, role permissions, audit chain)
+        run: npm run test:live
+      - name: Print answer key from the live database
+        run: npm run db:answers
