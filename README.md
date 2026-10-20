@@ -1,6 +1,6 @@
 # The Midnight Heist: a SQL Detective Quiz
 
-[![CI](https://github.com/<your-github-user>/<your-repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-github-user>/<your-repo>/actions/workflows/ci.yml)
+[![CI](https://github.com/alissarivero/mindnight-heist-sql-quiz/actions/workflows/ci.yml/badge.svg)](https://github.com/alissarivero/mindnight-heist-sql-quiz/actions/workflows/ci.yml)
 
 **Live quiz site: <https://YOUR-APP.vercel.app>** (replace after deploying, see [Deploy](#6-deploy-to-vercel))
 
@@ -316,8 +316,8 @@ Prerequisites: Node.js 20+ (22 recommended), a free [Supabase](https://supabase.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-github-user>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/alissarivero/mindnight-heist-sql-quiz.git
+cd mindnight-heist-sql-quiz
 npm install
 ```
 
