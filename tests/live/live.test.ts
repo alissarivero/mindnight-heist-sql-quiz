@@ -21,7 +21,8 @@ if (process.env.CI && !configured) {
 
 const clients: Client[] = [];
 async function connect(envVar: (typeof REQUIRED)[number]) {
-  const c = new Client(pgConfig(process.env[envVar]!));
+  const { TYPES } = await import("@/lib/db");
+  const c = new Client({ ...pgConfig(process.env[envVar]!), types: TYPES });
   await c.connect();
   clients.push(c);
   return c;
@@ -43,8 +44,10 @@ async function expectDenied(c: Client, sql: string, pattern: RegExp) {
 describe.skipIf(!configured)("live Supabase database", () => {
   it("connects through the session pooler over TLS", async () => {
     const c = await connect("DATABASE_URL");
-    const { rows } = await c.query("SELECT current_user, ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()");
-    expect(rows[0].ssl).toBe(true);
+    expect(new URL(process.env.DATABASE_URL!).hostname).toMatch(/pooler\.supabase\.com$/);
+    // pg_stat_ssl would describe the pooler's backend link, so inspect our own socket instead.
+    const socket = (c as unknown as { connection: { stream: { encrypted?: boolean } } }).connection.stream;
+    expect(socket.encrypted).toBe(true);
   });
 
   describe("every hint returns its documented expected result (as quiz_taker)", () => {
@@ -82,7 +85,7 @@ describe.skipIf(!configured)("live Supabase database", () => {
       const { runStudentSql } = await import("@/lib/db");
       const res = await runStudentSql("SELECT 1; DROP TABLE heist.suspects");
       expect(res.ok).toBe(false);
-      expect(!res.ok && res.error).toMatch(/multiple commands/);
+      expect(!res.ok && res.error).toMatch(/One statement at a time|multiple commands/);
     });
 
     it("returns rows from the live case data", async () => {

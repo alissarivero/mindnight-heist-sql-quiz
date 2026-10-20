@@ -10,7 +10,7 @@ export const MAX_ROWS = 500;
  * results look exactly like they do in psql and grade deterministically.
  */
 const RAW_TEXT_OIDS = new Set([20, 1082, 1083, 1114, 1184, 1186, 1700]);
-const TYPES: CustomTypesConfig = {
+export const TYPES: CustomTypesConfig = {
   getTypeParser: ((oid: number, format?: "text" | "binary") =>
     RAW_TEXT_OIDS.has(oid) ? (v: string) => v : types.getTypeParser(oid, format)) as CustomTypesConfig["getTypeParser"],
 };
