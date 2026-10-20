@@ -22,8 +22,9 @@ function makePool(envVar: string): Pool {
   if (!connectionString) throw new Error(`${envVar} is not set`);
   return new Pool({
     ...pgConfig(connectionString),
-    max: 3,
-    idleTimeoutMillis: 10_000,
+    // Session pooler slots are shared by every serverless instance; hold few and release fast.
+    max: 2,
+    idleTimeoutMillis: 3_000,
     connectionTimeoutMillis: 10_000,
     types: TYPES,
   });

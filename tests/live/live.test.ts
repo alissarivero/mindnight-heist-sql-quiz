@@ -19,16 +19,21 @@ if (process.env.CI && !configured) {
   throw new Error(`Missing GitHub Secrets: ${REQUIRED.filter((k) => !process.env[k]).join(", ")}`);
 }
 
-const clients: Client[] = [];
-async function connect(envVar: (typeof REQUIRED)[number]) {
-  const { TYPES } = await import("@/lib/db");
-  const c = new Client({ ...pgConfig(process.env[envVar]!), types: TYPES });
-  await c.connect();
-  clients.push(c);
-  return c;
+// One connection per login: the Supabase session pooler caps concurrent clients.
+const clients = new Map<string, Promise<Client>>();
+function connect(envVar: (typeof REQUIRED)[number]): Promise<Client> {
+  if (!clients.has(envVar)) {
+    clients.set(envVar, (async () => {
+      const { TYPES } = await import("@/lib/db");
+      const c = new Client({ ...pgConfig(process.env[envVar]!), types: TYPES });
+      await c.connect();
+      return c;
+    })());
+  }
+  return clients.get(envVar)!;
 }
 afterAll(async () => {
-  await Promise.all(clients.map((c) => c.end()));
+  await Promise.all([...clients.values()].map(async (c) => (await c).end()));
 });
 
 /** Expect a statement to fail; runs inside a rolled-back transaction. */
