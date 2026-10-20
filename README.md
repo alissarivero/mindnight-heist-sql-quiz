@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/alissarivero/mindnight-heist-sql-quiz/actions/workflows/ci.yml/badge.svg)](https://github.com/alissarivero/mindnight-heist-sql-quiz/actions/workflows/ci.yml)
 
-**Live quiz site: <https://YOUR-APP.vercel.app>** (replace after deploying, see [Deploy](#6-deploy-to-vercel))
+**Live quiz site: <https://mindnight-heist-sql-quiz-cwwb.vercel.app>**
 
 On the night of 13–14 March 2026, *The Azure Heron* ($18.5M) vanished from Gallery B of the Hollowell Museum at **00:47**. Every keycard swipe, camera hit, and alibi is stored in a hosted Postgres database. You sign in as a detective, write SQL against the live evidence, solve five clues worth **20 points**, and name the thief.
 
